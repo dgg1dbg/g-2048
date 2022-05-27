@@ -86,14 +86,3 @@ class GameBoardEnv(gym.Env):
 
     def render(self):
         pprint.pprint(self.board)
-
-
-if __name__ == "__main__":
-    game = GameEnv()
-    game.reset()
-    game.render()
-    game_over = 0
-    while not game_over:
-        n = int(input())
-        game_over = game.step(n)
-        game.render()
