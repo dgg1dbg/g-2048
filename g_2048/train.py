@@ -10,14 +10,15 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.initializers import RandomUniform
+from game_board import GameBoardEnv 
 
 
 # 상태가 입력, 큐함수가 출력인 인공신경망 생성
 class DQN(tf.keras.Model):
     def __init__(self, action_size):
         super(DQN, self).__init__()
-        self.fc1 = Dense(32, activation='relu')
-        self.fc2 = Dense(32, activation='relu')
+        self.fc1 = Dense(16, activation='relu')
+        self.fc2 = Dense(16, activation='relu')
         self.fc_out = Dense(action_size,
                             kernel_initializer=RandomUniform(-1e-3, 1e-3))
 
@@ -39,7 +40,7 @@ class DQNAgent:
 
         # DQN 하이퍼파라미터
         self.discount_factor = 0.99
-        self.learning_rate = 0.001
+        self.learning_rate = 0.0001
         self.epsilon = 1.0
         self.epsilon_decay = 0.999
         self.epsilon_min = 0.01
@@ -113,7 +114,7 @@ class DQNAgent:
 
 if __name__ == "__main__":
     # CartPole-v1 환경, 최대 타임스텝 수가 500
-    env = gym.make("2048-v0")
+    env = GameBoardEnv()
     state_size = env.observation_space.shape[0] * env.observation_space.shape[1]
     action_size = env.action_space.n
 
@@ -153,24 +154,23 @@ if __name__ == "__main__":
                 agent.train_model()
 
             state = next_state
-
             if done:
                 # 각 에피소드마다 타깃 모델을 모델의 가중치로 업데이트
                 agent.update_target_model()
                 # 에피소드마다 학습 결과 출력
                 score_avg = 0.9 * score_avg + 0.1 * score if score_avg != 0 else score
-                print("episode: {:3d} | score avg: {:3.2f} | memory length: {:4d} | epsilon: {:.4f}".format(
-                      e, score_avg, len(agent.memory), agent.epsilon))
+                print("episode: {:3d} | score: {} | score avg: {:3.2f} | memory length: {:4d} | epsilon: {:.4f}".format(
+                      e, score, score_avg, len(agent.memory), agent.epsilon))
 
                 # 에피소드마다 학습 결과 그래프로 저장
-                scores.append(score_avg)
+                scores.append(score)
                 episodes.append(e)
                 pylab.plot(episodes, scores, 'b')
                 pylab.xlabel("episode")
                 pylab.ylabel("average score")
-                #pylab.savefig("./save_graph/graph.png")
+                pylab.savefig("graphsd.png")
 
                 # 이동 평균이 400 이상일 때 종료
-                if score_avg > 200:
+                if score_avg > 100000:
                     #agent.model.save_weights("./save_model/model", save_format="tf")
                     sys.exit()
