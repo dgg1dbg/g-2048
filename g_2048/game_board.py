@@ -1,15 +1,23 @@
 import gym
 from gym import spaces
-import random
 import numpy as np
 import math
 import pprint
 
 
 
+def normalize(board):
+    n = np.linspace(start=0, stop=1, num=12)
+    board = [[int(np.log2(j)) if j != 0 else int(j) for j in i] for i in board]
+    board = [[n[j] for j in i] for i in board]
+    return np.array(board)
+    
+
+
+
 class GameBoardEnv(gym.Env):
     def __init__(self):
-        self.observation_space = spaces.Box(0, 3000, (4, 4), dtype=int)
+        self.observation_space = spaces.Box(0, 3000, (16, 1), dtype=int)
         self.action_space = spaces.Discrete(4)
         
 
@@ -24,7 +32,7 @@ class GameBoardEnv(gym.Env):
             i, j = np.random.randint(0, 16, 2)
         self.board[math.trunc(i/4), i%4] = np.random.choice([2, 4])
         self.board[math.trunc(j/4), j%4] = np.random.choice([2, 4])
-        return self.board
+        return normalize(self.board).flatten()
 
     def step(self, action):
         rec = self.board
@@ -53,7 +61,7 @@ class GameBoardEnv(gym.Env):
         elif (board1 == board2).all() and (board1 == board3).all() and (board1 == board4).all() and (board2 == board3).all() and (board3 == board4).all():
             self.ended = 1
 
-        return self.board, self.reward, self.ended, {'score': self.score, 'won': self.won}
+        return normalize(self.board).flatten(), self.reward, self.ended, {'score': self.score, 'won': self.won}
 
     def move(self, b, test = False):
         result = []
